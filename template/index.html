@@ -1,13 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Timer and Countdown</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cronómetro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --display-bg:      #e8eeff;
+      --display-bg2:     #d0daff;
+      --display-border:  #2c2c3e;
+      --display-glow:    rgba(100, 130, 255, 0.18);
+      --display-shadow:  rgba(44, 44, 62, 0.22);
+      --text-main:       #12122a;
+      --text-millis:     #4a4a7a;
+
+      --btn-green:       #43a047;
+      --btn-green-h:     #2e7d32;
+      --btn-green-glow:  rgba(67, 160, 71, 0.38);
+      --btn-blue:        #1e88e5;
+      --btn-blue-h:      #1250a0;
+      --btn-blue-glow:   rgba(30, 136, 229, 0.38);
+      --btn-red:         #e53935;
+      --btn-red-h:       #b71c1c;
+      --btn-red-glow:    rgba(229, 57, 53, 0.38);
+
+      --page-bg:         #f0f2f8;
+      --card-bg:         #ffffff;
+      --card-border:     #d8daea;
+      --card-shadow:     rgba(44, 44, 100, 0.10);
+    }
+
+    body {
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--page-bg);
+      background-image:
+        radial-gradient(ellipse at 20% 30%, rgba(160, 180, 255, 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%, rgba(200, 160, 255, 0.10) 0%, transparent 60%);
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    /* ─── Card wrapper ─────────────────────────────────────────── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      padding: 2.8rem 3.2rem 2.6rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.4rem;
+      box-shadow:
+        0 8px 32px var(--card-shadow),
+        0 1px 0 rgba(255,255,255,0.9) inset;
+      min-width: min(540px, 94vw);
+    }
+
+    /* ─── Label ────────────────────────────────────────────────── */
+    .label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-millis);
+      align-self: flex-start;
+    }
+
+    /* ─── Display ──────────────────────────────────────────────── */
+    #display {
+      width: 100%;
+      background: linear-gradient(160deg, var(--display-bg) 60%, var(--display-bg2));
+      border: 2.5px solid var(--display-border);
+      border-radius: 18px;
+      padding: 1.4rem 2rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      position: relative;
+      box-shadow:
+        0 6px 24px var(--display-shadow),
+        0 0 0 1px rgba(255,255,255,0.6) inset,
+        inset 0 2px 8px var(--display-glow);
+    }
+
+    /* subtle scan-line texture */
+    #display::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(44,44,100,0.025) 3px,
+        rgba(44,44,100,0.025) 4px
+      );
+      pointer-events: none;
+    }
+
+    #time-main {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: clamp(3.6rem, 12vw, 6.4rem);
+      color: var(--text-main);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      width: 100%;
+      text-align: center;
+      /* digit swap animation */
+      transition: color 0.08s;
+    }
+
+    #millis {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: clamp(1rem, 3vw, 1.35rem);
+      color: var(--text-millis);
+      letter-spacing: 0.12em;
+      margin-top: 0.3rem;
+      margin-right: 0.15rem;
+    }
+
+    /* running pulse on colon */
+    .running #time-main .sep {
+      animation: blink-sep 1s step-start infinite;
+    }
+    @keyframes blink-sep {
+      50% { opacity: 0.35; }
+    }
+
+    /* display glow when running */
+    .running #display {
+      box-shadow:
+        0 6px 24px var(--display-shadow),
+        0 0 0 1px rgba(255,255,255,0.6) inset,
+        inset 0 2px 8px var(--display-glow),
+        0 0 18px rgba(100,130,255,0.12);
+    }
+
+    /* ─── Buttons row ──────────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      gap: 1.6rem;
+      width: 100%;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 0;
+      padding: 1rem 1.2rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(1.1rem, 3.5vw, 1.45rem);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      transition:
+        transform 0.12s cubic-bezier(.34,1.56,.64,1),
+        box-shadow 0.15s ease,
+        background-color 0.15s ease,
+        filter 0.15s ease;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.22);
+      /* shine layer */
+      isolation: isolate;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 55%);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    .btn:active { transform: scale(0.96) translateY(1px); }
+
+    /* ── Primary button states ── */
+    #btn-primary { background-color: var(--btn-green); box-shadow: 0 4px 16px var(--btn-green-glow), 0 2px 0 rgba(255,255,255,0.15) inset; }
+    #btn-primary:hover:not(:disabled) { background-color: var(--btn-green-h); box-shadow: 0 6px 22px var(--btn-green-glow); transform: translateY(-2px); }
+
+    #btn-primary.state-continue { background-color: var(--btn-blue); box-shadow: 0 4px 16px var(--btn-blue-glow), 0 2px 0 rgba(255,255,255,0.15) inset; }
+    #btn-primary.state-continue:hover { background-color: var(--btn-blue-h); box-shadow: 0 6px 22px var(--btn-blue-glow); transform: translateY(-2px); }
+
+    /* ── Clear button ── */
+    #btn-clear { background-color: var(--btn-red); box-shadow: 0 4px 16px var(--btn-red-glow), 0 2px 0 rgba(255,255,255,0.15) inset; }
+    #btn-clear:hover:not(:disabled) { background-color: var(--btn-red-h); box-shadow: 0 6px 22px var(--btn-red-glow); transform: translateY(-2px); }
+    #btn-clear:disabled { opacity: 0.38; cursor: not-allowed; transform: none; box-shadow: none; filter: saturate(0.4); }
+
+    /* ─── State classes on body ────────────────────────────────── */
+    /* Applied by JS: body.stopped | body.running | body.paused */
+  </style>
 </head>
-<body>
-<h1>Timer and Countdown</h1>
-<script src="script.js"></script>
+<body class="stopped">
+
+  <div class="card">
+    <span class="label">Cronómetro</span>
+
+    <div id="display">
+      <div id="time-main">
+        <span id="hh">00</span><span class="sep">:</span><span id="mm">00</span><span class="sep">:</span><span id="ss">00</span>
+      </div>
+      <span id="millis">000</span>
+    </div>
+
+    <div class="btn-row">
+      <button id="btn-primary">Start</button>
+      <button id="btn-clear" disabled>Clear</button>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
 </body>
 </html>
