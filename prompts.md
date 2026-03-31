@@ -1,5 +1,5 @@
-Crea un meta promt de:
-Crea un cronómetro a en un fichero index.html que llama un script.js, la referencia de UX es la imágen que te incluyo. Este cronómetro indicará horas:minutos:segundos y 3 dígitos para los milisegundos.
+Crea un meta prompt de:
+Crea un cronómetro en un fichero index.html que llama un script.js, la referencia de UX es la imagen que te incluyo. Este cronómetro indicará horas:minutos:segundos y 3 dígitos para los milisegundos.
 Debajo del contador hay 2 botones:
 El botón 1, inicialmente, con el contador a 0, se mostrará "Start" que cambiará a "Pause" cuando la cuenta haya iniciado y si se pulsa sobre "Pause" se llamará "Continue".
 El segundo botón se llama "Clear" y realiza el stop del cronómetro a 0 y reinicia el botón 1 a "Start".

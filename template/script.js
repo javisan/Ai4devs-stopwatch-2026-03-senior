@@ -64,22 +64,22 @@
     // Body class drives CSS (glow, sep animation, etc.)
     document.body.className = state;
 
-    switch (state) {
+    btnPrimary.classList.remove('state-continue');
+
+    switch (state) {      
       case STATE.STOPPED:
         btnPrimary.textContent = 'Start';
-        btnPrimary.className   = '';
         btnClear.disabled      = true;
         break;
 
       case STATE.RUNNING:
         btnPrimary.textContent = 'Pause';
-        btnPrimary.className   = '';
         btnClear.disabled      = false;
         break;
 
       case STATE.PAUSED:
         btnPrimary.textContent = 'Continue';
-        btnPrimary.className   = 'state-continue';
+        btnPrimary.classList.add('state-continue');
         btnClear.disabled      = false;
         break;
     }
